@@ -35,21 +35,6 @@ Kotlin 및 Jetpack Compose를 기반으로 제작되었으며, 사용자 편의�
 
 ---
 
-## 📁 프로젝트 구조
-
-RecycleApp/
-├── app/
-│ ├── src/ # 앱 소스 코드
-│ ├── build.gradle.kts # 모듈별 Gradle 설정
-│ └── res/drawable/ # 커스텀 이미지 리소스
-├── build.gradle.kts # 프로젝트 전역 Gradle 설정
-├── settings.gradle.kts
-├── local.properties # 로컬 Android SDK 경로 (Git에 포함 안됨)
-├── google-services.json # Firebase 설정 파일
-└── libs.versions.toml # 라이브러리 버전 정의
-
----
-
 ## 🔐 주의사항
 
 - `local.properties` 및 `.idea/`, `build/`, `.gradle/` 폴더는 `.gitignore` 처리되어 있습니다.

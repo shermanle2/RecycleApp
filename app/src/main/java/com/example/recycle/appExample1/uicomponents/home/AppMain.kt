@@ -1,5 +1,7 @@
 package com.example.recycle.appExample1.uicomponents.home
 
+import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -91,6 +93,12 @@ fun AppMain(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
+                            .clickable {
+                                val encodedContent = Uri.encode(
+                                    "이 글은 분리수거 정보에 대한 자세한 내용입니다. 더 많은 정보를 확인하려면 클릭하세요."
+                                )
+                                navController.navigate("article/$title/홍길동/2025.05.25/$encodedContent")
+                            }
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.Bold)

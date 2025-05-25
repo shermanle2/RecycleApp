@@ -10,4 +10,5 @@ sealed class Routes(val route: String) {
     object WasteMap : Routes("waste_map")
     object Community : Routes("community")
     object User : Routes("user")
+    object Article : Routes("article")
 }

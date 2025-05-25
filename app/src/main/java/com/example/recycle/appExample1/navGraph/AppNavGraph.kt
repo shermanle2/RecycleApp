@@ -16,6 +16,7 @@ import com.example.recycle.appExample1.uicomponents.home.Recycling
 import com.example.recycle.appExample1.uicomponents.home.WasteMap
 import com.example.recycle.appExample1.uicomponents.home.Community
 import com.example.recycle.appExample1.uicomponents.home.User
+import com.example.recycle.appExample1.uicomponents.home.post.Article
 
 
 @Composable
@@ -111,6 +112,29 @@ fun AppNavGraph(navController: NavHostController) {
             User(
                 userId = it.arguments?.getString("userID") ?: "",
                 navController = navController
+            )
+        }
+
+        composable(
+            route = "${Routes.Article.route}/{title}/{author}/{date}/{content}",
+            arguments = listOf(
+                navArgument("title") { type = NavType.StringType },
+                navArgument("author") { type = NavType.StringType },
+                navArgument("date") { type = NavType.StringType },
+                navArgument("content") { type = NavType.StringType }
+            )
+        ) {
+            val title = it.arguments?.getString("title") ?: ""
+            val author = it.arguments?.getString("author") ?: ""
+            val date = it.arguments?.getString("date") ?: ""
+            val content = it.arguments?.getString("content") ?: ""
+
+            Article(
+                title = title,
+                author = author,
+                date = date,
+                content = content,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

@@ -45,7 +45,9 @@ fun AppNavGraph(navController: NavHostController) {
         composable(Routes.Register.route) {
             Register(
                 onRegisterSuccess = {
-                    navController.navigate("${Routes.Login.route}/")
+                    navController.navigate(Routes.Login.route) {
+                        popUpTo(Routes.Register.route) { inclusive = true }
+                    }
                 }
             )
         }

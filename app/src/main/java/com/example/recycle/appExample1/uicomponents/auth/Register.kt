@@ -1,5 +1,8 @@
 package com.example.recycle.appExample1.uicomponents.auth
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +29,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -39,6 +47,35 @@ fun Register(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val auth = Firebase.auth
+
+    val context = LocalContext.current as Activity
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+
+            Firebase.auth.signInWithCredential(credential)
+                .addOnCompleteListener { authResult ->
+                    if (authResult.isSuccessful) {
+                        onRegisterSuccess()
+                    } else {
+                        errorMessage = "구글 로그인 실패: ${authResult.exception?.message}"
+                    }
+                }
+        } catch (e: ApiException) {
+            errorMessage = "계정 인증 오류: ${e.message}"
+        }
+    }
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken("595141046686-ojp3kn3tlfnfqujrvfdum9smtigum9h9.apps.googleusercontent.com")
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
 
     Column(
         modifier = Modifier
@@ -57,7 +94,10 @@ fun Register(
 
         GoogleButton(
             name = "구글 계정으로 회원가입",
-            onClick = onGoogleRegister,
+            onClick = {
+                val signInIntent = googleSignInClient.signInIntent
+                launcher.launch(signInIntent)
+            },
             modifier = Modifier.fillMaxWidth()
         )
 

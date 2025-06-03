@@ -142,7 +142,16 @@ fun Register(
                         if (task.isSuccessful) {
                             onRegisterSuccess()
                         } else {
-                            errorMessage = "회원가입 실패: ${task.exception?.message}"
+                            val message = when (task.exception?.message) {
+                                "The email address is already in use by another account." ->
+                                    "이미 등록한 계정입니다. 다른 계정을 사용해주세요."
+                                "The given password is invalid. [ Password should be at least 6 characters ]" ->
+                                    "비밀번호는 6자 이상이어야 합니다."
+                                "The email address is badly formatted." ->
+                                    "올바른 이메일 형식을 입력해주세요."
+                                else -> "회원가입 실패: ${task.exception?.message}"
+                            }
+                            errorMessage = message
                         }
                     }
             },

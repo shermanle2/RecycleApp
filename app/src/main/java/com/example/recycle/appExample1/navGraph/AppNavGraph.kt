@@ -10,7 +10,6 @@ import com.example.recycle.appExample1.model.Routes
 import com.example.recycle.appExample1.uicomponents.auth.AppStart
 import com.example.recycle.appExample1.uicomponents.auth.Login
 import com.example.recycle.appExample1.uicomponents.auth.Register
-import com.example.recycle.appExample1.uicomponents.auth.GoogleLogin
 import com.example.recycle.appExample1.uicomponents.home.AppMain
 import com.example.recycle.appExample1.uicomponents.home.Recycling
 import com.example.recycle.appExample1.uicomponents.home.WasteMap
@@ -33,13 +32,8 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Routes.Login.route) {
             Login(
-                onLoginSuccess = { userId -> navController.navigate("${Routes.Main.route}/$userId") },
-                onGoogleLogin = { navController.navigate(Routes.GoogleLogin.route) }
+                onLoginSuccess = { userId -> navController.navigate("${Routes.Main.route}/$userId") }
             )
-        }
-
-        composable(Routes.GoogleLogin.route) {
-            GoogleLogin()
         }
 
         composable(Routes.Register.route) {

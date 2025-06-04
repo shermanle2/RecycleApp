@@ -95,8 +95,10 @@ fun Register(
         GoogleButton(
             name = "구글 계정으로 회원가입",
             onClick = {
-                val signInIntent = googleSignInClient.signInIntent
-                launcher.launch(signInIntent)
+                googleSignInClient.signOut().addOnCompleteListener {
+                    val signInIntent = googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
+                }
             },
             modifier = Modifier.fillMaxWidth()
         )

@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.example.recycle.appExample1.model.Routes
 import com.example.recycle.appExample1.uicomponents.home.layout.CommonScaffold
@@ -44,4 +46,14 @@ fun WasteMap(
             Text("WasteMap")
         }
     }
+}
+
+// preview
+@Preview(showBackground = true)
+@Composable
+fun WasteMapPreview() {
+    WasteMap(
+        userId = "testUser",
+        navController = NavHostController(LocalContext.current)
+    )
 }

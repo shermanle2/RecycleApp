@@ -12,6 +12,7 @@ composeBom = "2024.09.00"
 navigationComposeAndroid = "2.9.0"
 firebaseAuthKtx = "23.2.0"
 playServicesAuth = "21.3.0"
+mapApi = "2.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +34,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-navigation-compose-android = { group = "androidx.navigation", name = "navigation-compose-android", version.ref = "navigationComposeAndroid" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+map-api = { group = "net.daum.mf.map.api", name = "map-api", version.ref = "mapApi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

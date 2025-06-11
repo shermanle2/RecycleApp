@@ -79,20 +79,20 @@ fun Register(
                                         if (authResult.isSuccessful) {
                                             onRegisterSuccess()
                                         } else {
-                                            errorMessage = "구글 회원가입 실패: ${authResult.exception?.message}"
+                                            errorMessage = "구글 회원가입 실패"
                                         }
 
                                     }
                             }
                         } else {
-                            errorMessage = "계정 확인 중 오류: ${fetchTask.exception?.message}"
+                            errorMessage = "계정 확인 중 오류"
                         }
                     }
             } else {
                 errorMessage = "구글 계정 정보를 가져올 수 없습니다."
             }
         } catch (e: ApiException) {
-            errorMessage = "계정 인증 오류: ${e.message}"
+            errorMessage = "계정 인증 오류"
         }
     }
 

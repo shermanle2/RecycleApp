@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.recycle.R
 
 @Composable
@@ -80,11 +81,21 @@ fun AppStart(
         Button(
             onClick = onGuest,
             modifier = Modifier
-                .width(buttonWidth)
+                .width(buttonWidth + 10.dp)
                 .height(48.dp),
             colors = secondaryButtonColor
         ) {
             Text(text = "비회원으로 시작")
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AppStartPreview() {
+    AppStart(
+        onLogin = {},
+        onRegister = {},
+        onGuest = {}
+    )
 }

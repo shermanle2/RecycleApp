@@ -60,9 +60,13 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.retrofit)
-    implementation(libs.converter.gson)
     implementation(libs.play.services.auth)
     implementation(libs.kakao.map)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.coil.compose)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -70,9 +74,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-}
-
-secrets {
-    propertiesFileName = "secrets.properties"
-    defaultPropertiesFileName = "local.defaults.properties"
+    implementation("com.github.tehras:charts:0.2.4-alpha")
 }

@@ -1,4 +1,4 @@
-import com.example.recycle.appExample1.uicomponents.Detection.MyApiService
+import com.example.recycle.appExample1.uicomponents.detection.MyApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

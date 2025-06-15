@@ -360,7 +360,19 @@ fun MyHorizontalScrollRow(items: List<RecycleItem>) {
             onDismissRequest = { selectedItem = null },
             title = { Text(it.name) },
             text = { Text(it.description) },
-            confirmButton = { TextButton(onClick = { selectedItem = null }) { Text("확인") } }
+            confirmButton = {
+                Button(
+                    onClick = { selectedItem = null },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("분리수거 완료", color = MaterialTheme.colorScheme.onPrimary)
+                }
+                /* 파이어베이스 서버에 올리는 코드  */
+                /* 분리수거 비율에 it.name 이름의 값을 +1 */
+            },
+            dismissButton = {
+                TextButton(onClick = { selectedItem = null }) { Text("확인") }
+            }
         )
     }
 }

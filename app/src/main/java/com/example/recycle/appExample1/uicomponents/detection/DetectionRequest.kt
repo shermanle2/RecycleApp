@@ -1,4 +1,4 @@
-package com.example.recycle.appExample1.uicomponents.Detection
+package com.example.recycle.appExample1.uicomponents.detection
 
 import android.content.Context
 import android.graphics.Bitmap

@@ -1,19 +1,25 @@
 package com.example.recycle.appExample1.uicomponents.home
 
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.recycle.appExample1.model.Routes
@@ -85,6 +96,9 @@ fun WasteMap(
     //var searchMarkerPosition by remember { mutableStateOf<LatLng?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     var searchTarget by remember { mutableStateOf<LatLng?>(null) }
+    var selectedAddress by remember { mutableStateOf<String?>(null) }
+    var isSearchPerformed by remember { mutableStateOf(false) }
+    var selectedLatLng by remember { mutableStateOf<LatLng?>(null) }
 
     val cameraPositionState = rememberCameraPositionState()
     val locationSource = rememberFusedLocationSource()
@@ -217,9 +231,11 @@ fun WasteMap(
                 Button(
                     onClick = {
                         if (searchQuery.isNotBlank()) {
+                            selectedAddress = null
                             searchLocation(searchQuery) { latLng ->
                                 if (latLng != null) {
                                     searchTarget = latLng
+                                    isSearchPerformed = true
                                 } else {
                                     Toast.makeText(context, "검색 결과 없음", Toast.LENGTH_SHORT).show()
                                 }
@@ -258,16 +274,52 @@ fun WasteMap(
                         currentPosition?.let {
                             Marker(
                                 state = rememberMarkerState(position = it),
-                                captionText = "현 위치"
+                                captionText = "현 위치",
+                                onClick = {
+                                    selectedLatLng = currentPosition
+                                    selectedAddress = "현재 위치"
+                                    true
+                                }
                             )
                         }
-                        if (searchTarget != null) {
+                        if (isSearchPerformed && searchTarget != null) {
                             Marker(
                                 state = searchMarkerState,
-                                captionText = "검색 위치"
+                                captionText = "검색 위치",
+                                onClick = {
+                                    selectedLatLng = searchTarget
+                                    selectedAddress = searchQuery
+                                    true
+                                }
                             )
                         }
                     }
+
+                    if (selectedLatLng != null && selectedAddress != null) {
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .background(Color.White, shape = RoundedCornerShape(12.dp))
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "(분리수거일 안내)",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "[안내문 보기]",
+                                color = Color.Blue,
+                                modifier = Modifier.clickable {
+                                    val encoded = URLEncoder.encode(selectedAddress!!, "UTF-8")
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com/guide?addr=$encoded"))
+                                    context.startActivity(intent)
+                                }
+                            )
+                        }
+                    }
+
                 }else{
                     NaverMap(
                         modifier = Modifier.fillMaxSize(),

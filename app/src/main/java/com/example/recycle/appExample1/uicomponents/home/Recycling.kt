@@ -51,8 +51,8 @@ import com.example.recycle.appExample1.feature.Detection.drawBoundingBoxOnBitmap
 import com.example.recycle.appExample1.feature.Detection.postBitmapForDetection
 import com.example.recycle.appExample1.model.RecycleItem
 import com.example.recycle.appExample1.model.Routes
-import com.example.recycle.appExample1.uicomponents.home.layout.CommonScaffold
-import com.example.recycle.appExample1.uicomponents.home.layout.HomeTab
+import com.example.recycle.communityExample.uicomponents.home.layout.CommonScaffold
+import com.example.recycle.communityExample.uicomponents.home.layout.HomeTab
 import java.io.File
 import java.io.FileOutputStream
 

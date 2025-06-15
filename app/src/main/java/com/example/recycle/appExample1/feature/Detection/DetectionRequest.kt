@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:app/src/main/java/com/example/recycle/appExample1/feature/Detection/DetectionRequest.kt
 package com.example.recycle.appExample1.feature.Detection
-========
-package com.example.recycle.appExample1.uicomponents.detection
->>>>>>>> feature/community:app/src/main/java/com/example/recycle/appExample1/uicomponents/detection/DetectionRequest.kt
 
 import android.content.Context
 import android.graphics.Bitmap

@@ -1,5 +1,8 @@
 package com.example.recycle.appExample1.uicomponents.auth
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +30,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import com.example.recycle.appExample1.uicomponents.auth.GoogleButton
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -39,6 +49,54 @@ fun Register(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val auth = Firebase.auth
+    val context = LocalContext.current as Activity
+
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken("595141046686-ojp3kn3tlfnfqujrvfdum9smtigum9h9.apps.googleusercontent.com")
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val emailFromGoogle = account.email
+            val idToken = account.idToken
+
+            if (emailFromGoogle != null && idToken != null) {
+                auth.fetchSignInMethodsForEmail(emailFromGoogle)
+                    .addOnCompleteListener { fetchTask ->
+                        if (fetchTask.isSuccessful) {
+                            val signInMethods = fetchTask.result.signInMethods
+                            if (!signInMethods.isNullOrEmpty()) {
+                                errorMessage = "이미 등록된 구글 계정입니다."
+                            } else {
+                                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                                auth.signInWithCredential(credential)
+                                    .addOnCompleteListener { authResult ->
+                                        if (authResult.isSuccessful) {
+                                            onRegisterSuccess()
+                                        } else {
+                                            errorMessage = "구글 회원가입 실패"
+                                        }
+
+                                    }
+                            }
+                        } else {
+                            errorMessage = "계정 확인 중 오류"
+                        }
+                    }
+            } else {
+                errorMessage = "구글 계정 정보를 가져올 수 없습니다."
+            }
+        } catch (e: ApiException) {
+            errorMessage = "계정 인증 오류"
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -57,13 +115,18 @@ fun Register(
 
         GoogleButton(
             name = "구글 계정으로 회원가입",
-            onClick = onGoogleRegister,
+            onClick = {
+                googleSignInClient.signOut().addOnCompleteListener {
+                    val signInIntent = googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Divider(thickness = 1.dp, color = Color.LightGray)
+        HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
@@ -102,7 +165,16 @@ fun Register(
                         if (task.isSuccessful) {
                             onRegisterSuccess()
                         } else {
-                            errorMessage = "회원가입 실패: ${task.exception?.message}"
+                            val message = when (task.exception?.message) {
+                                "The email address is already in use by another account." ->
+                                    "이미 등록한 계정입니다. 다른 계정을 사용해주세요."
+                                "The given password is invalid. [ Password should be at least 6 characters ]" ->
+                                    "비밀번호는 6자 이상이어야 합니다."
+                                "The email address is badly formatted." ->
+                                    "올바른 이메일 형식을 입력해주세요."
+                                else -> "회원가입 실패: ${task.exception?.message}"
+                            }
+                            errorMessage = message
                         }
                     }
             },
@@ -125,11 +197,11 @@ fun Register(
     }
 }
 
- @Preview
- @Composable
- fun RegisterPreview() {
-     Register(
-         onRegisterSuccess = {},
-         onGoogleRegister = {}
-     )
- }
+@Preview
+@Composable
+fun RegisterPreview() {
+    Register(
+        onRegisterSuccess = {},
+        onGoogleRegister = {}
+    )
+}

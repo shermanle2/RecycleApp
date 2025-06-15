@@ -1,4 +1,4 @@
-package com.example.recycle.appExample1.uicomponents.home.layout
+package com.example.recycle.communityExample.uicomponents.home.layout
 
 enum class HomeTab(val route: String, val label: String) {
     APPMAIN("main", "메인"),

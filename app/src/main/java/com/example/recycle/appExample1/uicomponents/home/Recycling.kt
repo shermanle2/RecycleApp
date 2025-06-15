@@ -1,83 +1,149 @@
 package com.example.recycle.appExample1.uicomponents.home
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.net.Uri
+import android.provider.Settings
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.example.recycle.BuildConfig
+import com.example.recycle.appExample1.feature.Detection.DetectionResult
+import com.example.recycle.appExample1.feature.Detection.drawBoundingBoxOnBitmap
+import com.example.recycle.appExample1.feature.Detection.postBitmapForDetection
+import com.example.recycle.appExample1.model.RecycleItem
 import com.example.recycle.appExample1.model.Routes
 import com.example.recycle.appExample1.uicomponents.home.layout.CommonScaffold
 import com.example.recycle.appExample1.uicomponents.home.layout.HomeTab
-import android.graphics.Bitmap
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import android.graphics.BitmapFactory
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import java.io.File
-
-import android.graphics.Matrix
-import android.view.ViewGroup
-import android.widget.Toast
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import java.io.FileOutputStream
-import androidx.camera.core.AspectRatio
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.Alignment
-import com.example.recycle.appExample1.model.RecycleItem
-import com.example.recycle.appExample1.uicomponents.Detection.DetectionResult
-import com.example.recycle.appExample1.uicomponents.Detection.drawBoundingBoxOnBitmap
-import com.example.recycle.appExample1.uicomponents.Detection.postBitmapForDetection
+
+private val DEBUG = BuildConfig.DEBUG
 
 @Composable
 fun CameraCaptureScreen(
     modifier: Modifier = Modifier.fillMaxWidth(),
-    items: MutableState<List<RecycleItem>>,
+    items: MutableState<List<RecycleItem>>
 ) {
     val context = LocalContext.current
+    val activity = context as? Activity
+
+    // 권한 상태
+    var cameraPermissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    // 거부 횟수 추적
+    var deniedCount by remember { mutableStateOf(0) }
+    // 설정 버튼 표시 여부: 거부된 횟수와 시스템의 shouldShowRequestPermissionRationale 리턴값을 조합
+    val showSettingsButton: Boolean = deniedCount >= 1 &&
+            !(activity?.let { ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA) } ?: false)
+// 권한 요청 런처
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) deniedCount += 1
+        cameraPermissionGranted = granted
+    }
+    activity?.let { !ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.CAMERA) }
+        ?: false
+
+    // 권한 요청/설정 전환 UI
+    if (!cameraPermissionGranted) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("카메라 권한이 필요합니다.")
+            Spacer(Modifier.height(8.dp))
+            if (showSettingsButton) {
+                Button(onClick = {
+                    activity?.let {
+                        val intent = Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", it.packageName, null)
+                        )
+                        it.startActivity(intent)
+                    }
+                }) {
+                    Text("설정으로 이동")
+                }
+            } else {
+                Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
+                    Text("권한 요청")
+                }
+            }
+        }
+        return
+    }
+
+    // 이미지 캡처 및 분석 상태
+    var isLoading by remember { mutableStateOf(false) }
+    var capturedImage by remember { mutableStateOf<Bitmap?>(null) }
+    var detectionResult by remember { mutableStateOf<DetectionResult?>(null) }
+    var showResultDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val executor = ContextCompat.getMainExecutor(context)
-
-    var capturedImage by remember { mutableStateOf<Bitmap?>(null) }
     val imageCapture = remember {
         ImageCapture.Builder()
             .setTargetAspectRatio(AspectRatio.RATIO_4_3)
             .build()
     }
-    var showResultDialog by remember { mutableStateOf(false) }
-    var showErrorDialog by remember { mutableStateOf(false) }
-    var detectionResult by remember { mutableStateOf<DetectionResult?>(null) }
 
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Top
-    ) {
-        // 1. 프리뷰/캡처 이미지 영역 (4:3, overflow 방지)
+    Column(modifier = modifier) {
         Box(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(3f / 4f)
-                .background(Color.Blue)
+                .background(Color.Black)
         ) {
+            // 프리뷰 또는 결과 이미지
             if (capturedImage == null) {
                 AndroidView(
                     factory = { ctx ->
@@ -86,202 +152,215 @@ fun CameraCaptureScreen(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.MATCH_PARENT
                             )
-                            scaleType = PreviewView.ScaleType.FIT_CENTER // ★★ 변경
+                            scaleType = PreviewView.ScaleType.FIT_CENTER
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
                     update = { previewView ->
-                        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-                        cameraProviderFuture.addListener({
-                            val cameraProvider = cameraProviderFuture.get()
-                            val preview = Preview.Builder()
-                                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                                .build().also {
-                                    it.setSurfaceProvider((previewView as PreviewView).surfaceProvider)
-                                }
-                            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-                            try {
-                                cameraProvider.unbindAll()
-                                cameraProvider.bindToLifecycle(
-                                    lifecycleOwner,
-                                    cameraSelector,
-                                    preview,
-                                    imageCapture
-                                )
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                        }, executor)
+                        val cameraProvider = ProcessCameraProvider.getInstance(context).get()
+                        val preview = Preview.Builder()
+                            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                            .build().also { it.setSurfaceProvider((previewView as PreviewView).surfaceProvider) }
+                        try {
+                            cameraProvider.unbindAll()
+                            cameraProvider.bindToLifecycle(
+                                lifecycleOwner,
+                                CameraSelector.DEFAULT_BACK_CAMERA,
+                                preview,
+                                imageCapture
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 )
             } else {
                 Image(
                     bitmap = capturedImage!!.asImageBitmap(),
-                    contentDescription = "Captured Image",
+                    contentDescription = "Captured",
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit // ★★ 변경
+                    contentScale = ContentScale.Fit
+                )
+            }
+
+            // 촬영/재촬영 버튼
+            FloatingActionButton(
+                onClick = {
+                    if (capturedImage == null) {
+                        isLoading = true
+                        val file = File.createTempFile("IMG_", ".jpg", context.cacheDir)
+                        val options = ImageCapture.OutputFileOptions.Builder(file).build()
+                        imageCapture.takePicture(
+                            options, executor,
+                            object : ImageCapture.OnImageSavedCallback {
+                                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                    val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                                    val rotated = Bitmap.createBitmap(
+                                        bmp, 0, 0, bmp.width, bmp.height,
+                                        Matrix().apply { postRotate(90f) }, true
+                                    )
+                                    capturedImage = rotated
+                                    postBitmapForDetection(context, rotated) { result ->
+                                        isLoading = false
+                                        if (result != null) {
+                                            detectionResult = result
+                                            showResultDialog = true
+                                            var list = emptyList<RecycleItem>()
+                                            result.detections.forEach { det ->
+                                                if (det.confidence > 0.5) {
+                                                    list += RecycleItem(det.label, det.description)
+                                                    capturedImage = drawBoundingBoxOnBitmap(
+                                                        capturedImage!!, det.bbox, det.label
+                                                    )
+                                                }
+                                            }
+                                            items.value = list
+                                        } else {
+                                            showErrorDialog = true
+                                        }
+                                    }
+                                }
+                                override fun onError(exception: ImageCaptureException) {
+                                    isLoading = false
+                                    showErrorDialog = true
+                                }
+                            }
+                        )
+                    } else {
+                        capturedImage = null
+                        items.value = emptyList()
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 8.dp),
+                shape = CircleShape,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp)
+                    .size(64.dp)
+            ) {
+                Icon(
+                    imageVector = if (capturedImage == null) Icons.Filled.Camera else Icons.Filled.Refresh,
+                    contentDescription = if (capturedImage == null) "Capture" else "Retake",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            // 로딩 오버레이
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("분석 중...", color = Color.White)
+                    }
+                }
+            }
+        }
+        // 감지된 재활용품 표시
+        if (!isLoading && items.value.isNotEmpty()) {
+            Text(
+                text = "감지된 재활용품!\n클릭해서 분리수거 방법을 알아 보세요!",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 16.dp, top = 12.dp)
+            )
+            MyHorizontalScrollRow(items = items.value)
+        }
+        else if (!isLoading && items.value.isEmpty() && capturedImage != null) {
+            var showNoDetectionDialog by remember { mutableStateOf(true) }
+            if (showNoDetectionDialog) {
+                AlertDialog(
+                    onDismissRequest = { showNoDetectionDialog = false },
+                    title = { Text("알림") },
+                    text = { Text("감지된 재활용품이 없습니다!\n다시 촬영해 보세요!") },
+                    confirmButton = {
+                        TextButton(onClick = { showNoDetectionDialog = false }) {
+                            Text("확인")
+                        }
+                    }
                 )
             }
         }
-
-        // 2. 버튼 Row (프리뷰 아래 고정)
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            if (capturedImage == null) {
-                Button(onClick = {
-                    val photoFile = File.createTempFile("IMG_", ".jpg", context.cacheDir)
-                    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-                    imageCapture.takePicture(
-                        outputOptions,
-                        executor,
-                        object : ImageCapture.OnImageSavedCallback {
-                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                                val bmp = BitmapFactory.decodeFile(photoFile.absolutePath)
-                                val matrix = Matrix()
-                                matrix.postRotate(90f)
-                                val rotatedBmp = Bitmap.createBitmap(
-                                    bmp, 0, 0, bmp.width, bmp.height, matrix, true
-                                )
-                                FileOutputStream(photoFile).use { out ->
-                                    rotatedBmp.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                                }
-                                capturedImage = rotatedBmp
-                                    // 이미지 캡처 후 바로 분류 요청
-                                postBitmapForDetection(context, capturedImage!!) { result ->
-                                    if (result != null) {
-                                        // 결과 처리
-                                        detectionResult = result
-                                        showResultDialog = true
-
-                                        // items 업데이트
-                                        var tempItems = emptyList<RecycleItem>()
-                                        result.detections.forEach { detection ->
-                                            // 캡처된 이미지에 바운딩 박스 그리기
-                                            if (detection.confidence > 0.5) { // 신뢰도 기준 설정
-                                                // 아이템 목록에 추가
-                                                tempItems = tempItems + RecycleItem(
-                                                    name = detection.label,
-                                                    description = detection.description
-                                                )
-                                                // 바운딩 박스 그리기
-                                                capturedImage = drawBoundingBoxOnBitmap(
-                                                    capturedImage!!,
-                                                    detection.bbox,
-                                                    detection.label
-                                                )
-
-                                            }
-                                        }
-                                        items.value = tempItems
-
-
-                                    } else {
-                                        // 에러 처리
-                                        showErrorDialog = true
-                                        Toast.makeText(context, "postBitmapForDetection error", Toast.LENGTH_LONG).show()
-                                    }
-                                }
-
-                            }
-                            override fun onError(exception: ImageCaptureException) {
-                                exception.printStackTrace()
-                                showErrorDialog = true
-                                Toast.makeText(context, "capturedImage is null", Toast.LENGTH_LONG).show()
-                            }
-
-                        }
-                    )
-
-
-
-                }) {
-                    Text("캡처")
-                }
-            } else {
-                Button(onClick = {
-                    capturedImage = null
-                    items.value = emptyList() // 이미지 캡처 후 다시 촬영 시 아이템 목록 초기화
-                }) {
-                    Text("다시 촬영")
-                }
-            }
-        }
     }
-    if (showResultDialog && detectionResult != null) {
+
+    // 디버그용 다이얼로그
+    if (DEBUG && showResultDialog && detectionResult != null) {
         AlertDialog(
             onDismissRequest = { showResultDialog = false },
             title = { Text("분류 결과") },
             text = {
                 Column {
                     Text("처리 시간: ${detectionResult!!.inference_time_s}s")
-                    detectionResult!!.detections.forEach { detection ->
-                        Text("라벨: ${detection.label}, 신뢰도: ${"%.2f".format(detection.confidence * 100)}%, 위치: ${detection.bbox.joinToString(", ")}")
+                    detectionResult!!.detections.forEach { det ->
+                        Text("${det.label} (${"%.2f".format(det.confidence*100)}%)")
                     }
                 }
             },
             confirmButton = {
-                Button(onClick = { showResultDialog = false }) { Text("확인") }
+                TextButton(onClick = { showResultDialog = false }) { Text("확인") }
             }
         )
     }
-
-// 에러 팝업
-    if (showErrorDialog) {
+    if (DEBUG && showErrorDialog) {
         AlertDialog(
             onDismissRequest = { showErrorDialog = false },
             title = { Text("오류") },
-            text = { Text("분석 중 오류가 발생했습니다. 다시 시도해 주세요.") },
+            text = { Text("캡처 또는 분석 중 오류가 발생했습니다.") },
             confirmButton = {
-                Button(onClick = { showErrorDialog = false }) { Text("확인") }
+                TextButton(onClick = { showErrorDialog = false }) { Text("확인") }
             }
         )
     }
 }
 
-
-
 @Composable
 fun MyHorizontalScrollRow(items: List<RecycleItem>) {
-    // 팝업 상태
     var selectedItem by remember { mutableStateOf<RecycleItem?>(null) }
-
     Row(
         modifier = Modifier
+            .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .fillMaxSize()
+            .padding(vertical = 8.dp)
     ) {
         items.forEach { item ->
             Card(
                 modifier = Modifier
-                    .padding(5.dp)
-                    .fillMaxHeight(),
-                onClick = { selectedItem = item } // 카드 클릭 시 해당 아이템 저장
+                    .padding(horizontal = 8.dp)
+                    .wrapContentSize()
+                    .clickable { selectedItem = item },
+                colors = CardDefaults.cardColors(containerColor = Color.LightGray),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Box(
-                    Modifier
-                        .padding(16.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(item.name)
+                    Text(
+                        text = item.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Black,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }
     }
-    // 팝업(다이얼로그)
-    if (selectedItem != null) {
+    selectedItem?.let {
         AlertDialog(
             onDismissRequest = { selectedItem = null },
-            title = { Text(selectedItem!!.name) },
-            text = { Text(selectedItem!!.description) },
-            confirmButton = {
-                Button(onClick = { selectedItem = null }) {
-                    Text("확인")
-                }
-            }
+            title = { Text(it.name) },
+            text = { Text(it.description) },
+            confirmButton = { TextButton(onClick = { selectedItem = null }) { Text("확인") } }
         )
     }
 }
@@ -291,43 +370,29 @@ fun Recycling(
     userId: String,
     navController: NavHostController
 ) {
-    var items = remember { mutableStateOf<List<RecycleItem>>(emptyList()) }
-
+    var items by remember { mutableStateOf(emptyList<RecycleItem>()) }
     CommonScaffold(
         selectedTab = HomeTab.RECYCLING,
-
         onTabSelected = { tab ->
             val route = when (tab) {
-                HomeTab.APPMAIN -> "${Routes.Main.route}/$userId"
+                HomeTab.APPMAIN   -> "${Routes.Main.route}/$userId"
                 HomeTab.RECYCLING -> "${Routes.Recycling.route}/$userId"
-                HomeTab.WASTEMAP -> "${Routes.WasteMap.route}/$userId"
+                HomeTab.WASTEMAP  -> "${Routes.WasteMap.route}/$userId"
                 HomeTab.COMMUNITY -> "${Routes.Community.route}/$userId"
-                HomeTab.USER -> "${Routes.User.route}/$userId"
+                HomeTab.USER      -> "${Routes.User.route}/$userId"
             }
             navController.navigate(route) {
                 launchSingleTop = true
                 popUpTo(Routes.Main.route) { inclusive = false }
             }
         },
-
         onUserClick = {
-            navController.navigate("${Routes.User.route}/$userId") {
-                launchSingleTop = true
-            }
+            navController.navigate("${Routes.User.route}/$userId") { launchSingleTop = true }
         },
-
         onDeleteClick = { /* TODO */ }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-//            Text("Recycling")
-//            CameraScreen(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .aspectRatio(16f / 9f)
-//            )
-            CameraCaptureScreen(items=items)
-            MyHorizontalScrollRow(items.value)
-
+            CameraCaptureScreen(items = remember { mutableStateOf(items) })
         }
     }
 }

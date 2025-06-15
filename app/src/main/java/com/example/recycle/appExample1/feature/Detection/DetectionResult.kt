@@ -1,4 +1,4 @@
-package com.example.recycle.appExample1.uicomponents.Detection
+package com.example.recycle.appExample1.feature.Detection
 
 data class Detection(
     val label: String,

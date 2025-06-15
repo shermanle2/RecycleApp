@@ -8,7 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.recycle.appExample1.uicomponents.MainScreen1
+import com.example.recycle.appExample1.uicomponents.MainScreen
 import com.example.recycle.ui.theme.RecycleTheme
 
 class MainActivity : ComponentActivity() {
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
 //                    )
 //                }
                 //LoginMainScreen()
-                MainScreen1()
+                MainScreen()
             }
         }
     }

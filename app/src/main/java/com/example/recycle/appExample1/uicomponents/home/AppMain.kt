@@ -1,7 +1,5 @@
 package com.example.recycle.appExample1.uicomponents.home
 
-import android.net.Uri
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.recycle.appExample1.model.Routes
-import com.example.recycle.appExample1.uicomponents.home.layout.CommonScaffold
-import com.example.recycle.appExample1.uicomponents.home.layout.HomeTab
+import com.example.recycle.communityExample.uicomponents.home.layout.CommonScaffold
+import com.example.recycle.communityExample.uicomponents.home.layout.HomeTab
 
 @Composable
 fun AppMain(
@@ -58,7 +56,7 @@ fun AppMain(
             }
         },
 
-        onDeleteClick = { /* TODO */ }
+        onDeleteClick = { }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             Row(
@@ -93,12 +91,6 @@ fun AppMain(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp)
-                            .clickable {
-                                val encodedContent = Uri.encode(
-                                    "이 글은 분리수거 정보에 대한 자세한 내용입니다. 더 많은 정보를 확인하려면 클릭하세요."
-                                )
-                                navController.navigate("article/$title/홍길동/2025.05.25/$encodedContent")
-                            }
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.Bold)

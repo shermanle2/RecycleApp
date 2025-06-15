@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:app/src/main/java/com/example/recycle/appExample1/feature/Detection/ApiRepository.kt
 package com.example.recycle.appExample1.feature.Detection
+========
+package com.example.recycle.appExample1.uicomponents.detection
+>>>>>>>> feature/community:app/src/main/java/com/example/recycle/appExample1/uicomponents/detection/ApiRepository.kt
 
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

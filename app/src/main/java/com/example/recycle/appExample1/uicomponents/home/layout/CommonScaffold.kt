@@ -1,4 +1,4 @@
-package com.example.recycle.appExample1.uicomponents.home.layout
+package com.example.recycle.communityExample.uicomponents.home.layout
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues

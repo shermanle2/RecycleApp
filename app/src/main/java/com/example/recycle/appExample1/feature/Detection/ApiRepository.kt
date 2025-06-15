@@ -1,5 +1,6 @@
 package com.example.recycle.appExample1.feature.Detection
 
+import com.example.recycle.appExample1.model.RecycleLocation
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -26,4 +27,10 @@ object ApiRepository {
             null
         }
     }
+
+    fun fetchLocationsSync(location: String): List<RecycleLocation>? =
+        try {
+            val resp = RetrofitClient.api.getLocations(location).execute()
+            resp.takeIf { it.isSuccessful }?.body()?.result
+        } catch (e: Exception) { null }
 }

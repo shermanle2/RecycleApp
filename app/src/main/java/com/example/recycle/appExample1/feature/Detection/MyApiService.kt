@@ -1,4 +1,4 @@
-package com.example.recycle.appExample1.uicomponents.Detection
+package com.example.recycle.appExample1.feature.Detection
 
 import okhttp3.MultipartBody
 import retrofit2.Call

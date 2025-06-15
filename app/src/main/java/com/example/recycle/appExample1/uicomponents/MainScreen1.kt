@@ -10,3 +10,4 @@ fun MainScreen1(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     AppNavGraph(navController = navController)
 }
+

@@ -14,4 +14,12 @@ object RetrofitClient {
             .build()
             .create(MyApiService::class.java)
     }
+
+    val recycleLocationsApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MyApiService::class.java) // Assuming MyApiService has methods for recycle locations
+    }
 }

@@ -1,0 +1,25 @@
+package com.example.recycle.appExample1.model
+
+data class RecycleLocation(
+    val type: String,           // "배출장소유형"
+    val place: String,          // "배출장소"
+    val trashMethod: String,    // "생활쓰레기배출방법"
+    val foodWasteMethod: String,// "음식물쓰레기배출방법"
+    val recycleMethod: String,  // "재활용품배출방법"
+    val bulkPlace: String,      // "일시적다량배출장소"
+    val trashDays: String,      // "생활쓰레기배출요일"
+    val foodWasteDays: String,  // "음식물쓰레기배출요일"
+    val recycleDays: String,    // "재활용품배출요일"
+    val trashStart: String,     // "생활쓰레기배출시작시간"
+    val trashEnd: String,       // "생활쓰레기배출종료시간"
+    val foodWasteStart: String, // "음식물쓰레기배출시작시간"
+    val foodWasteEnd: String,   // "음식물쓰레기배출종료시간"
+    val recycleStart: String,   // "재활용품배출시작시간"
+    val recycleEnd: String,     // "재활용품배출종료시간"
+    val bulkStart: String,      // "일시적다량배출시작시각"
+    val bulkEnd: String,        // "일시적다량배출종료시각"
+    val noCollectAlert: String, // "미수거알림구역"
+    val deptName: String,       // "관리부서명"
+    val deptContact: String,    // "관리부서연락처"
+    val dataDate: String        // "데이터기준일자"
+)

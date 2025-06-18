@@ -401,7 +401,7 @@ fun Recycling(
         onUserClick = {
             navController.navigate("${Routes.User.route}/$userId") { launchSingleTop = true }
         },
-        onDeleteClick = { /* TODO */ }
+        onDeleteClick = { }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             CameraCaptureScreen(items = remember { mutableStateOf(items) })

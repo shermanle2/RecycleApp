@@ -56,7 +56,9 @@ fun PostDetailScreen(
     posts: List<CommunityPost>,
     currentUserId: String,
     onBackClick: () -> Unit,
-    viewModel: CommunityViewModel
+    viewModel: CommunityViewModel,
+    infoOnly: Boolean = false
+
 ) {
     val post = remember(posts, postId) {
         posts.find { it.id == postId }
@@ -89,13 +91,14 @@ fun PostDetailScreen(
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "뒤로가기")
                 }
             }, actions = {
-                if (post.author == currentUserId) {
+                if (!infoOnly && post.author == currentUserId) {
                     TextButton(
                         onClick = {
                             viewModel.deletePost(post.id) {
                                 onBackClick()
                             }
-                        }) {
+                        }
+                    ) {
                         Text("삭제", color = MaterialTheme.colorScheme.error)
                     }
                 }
@@ -103,6 +106,7 @@ fun PostDetailScreen(
         }) { padding ->
         Column(
             modifier = Modifier
+                .padding(padding)
                 .padding(16.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())

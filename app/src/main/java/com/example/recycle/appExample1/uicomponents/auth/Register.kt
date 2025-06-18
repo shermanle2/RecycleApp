@@ -1,6 +1,7 @@
 package com.example.recycle.appExample1.uicomponents.auth
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -94,7 +94,8 @@ fun Register(
                 errorMessage = "구글 계정 정보를 가져올 수 없습니다."
             }
         } catch (e: ApiException) {
-            errorMessage = "계정 인증 오류"
+            errorMessage = "계정 인증 오류 : ${e.statusCode} - ${e.message}"
+            Log.e("계정 인증 오류", "${e.statusCode} - ${e.message}")
         }
     }
 

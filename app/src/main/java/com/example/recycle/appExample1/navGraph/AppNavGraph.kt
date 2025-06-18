@@ -38,14 +38,16 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Routes.Login.route) {
             Login(
-                onLoginSuccess = { userId -> navController.navigate("${Routes.Main.route}/$userId") },
-                )
+                onLoginSuccess = { userId -> navController.navigate("${Routes.Main.route}/$userId") }
+            )
         }
 
         composable(Routes.Register.route) {
             Register(
                 onRegisterSuccess = {
-                    navController.navigate("${Routes.Login.route}/")
+                    navController.navigate(Routes.Login.route) {
+                        popUpTo(Routes.Register.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -59,7 +61,8 @@ fun AppNavGraph(navController: NavHostController) {
         ) {
             AppMain(
                 userId = it.arguments?.getString("userID") ?: "",
-                navController = navController
+                navController = navController,
+                viewModel = viewModel
             )
         }
 
@@ -106,22 +109,29 @@ fun AppNavGraph(navController: NavHostController) {
         }
 
         composable(
-            route = "${Routes.PostDetail.route}/{postId}/{userID}",
+            route = "${Routes.PostDetail.route}/{postId}/{userID}?infoOnly={infoOnly}",
             arguments = listOf(
                 navArgument("postId") { type = NavType.StringType },
-                navArgument("userID") { type = NavType.StringType }
+                navArgument("userID") { type = NavType.StringType },
+                navArgument("infoOnly") {
+                    type = NavType.StringType  // ⛳ 바꿔야 함!
+                    defaultValue = "false"
+                    nullable = true
+                }
             )
         ) { backStackEntry ->
-
             val postId = backStackEntry.arguments?.getString("postId") ?: ""
             val userId = backStackEntry.arguments?.getString("userID") ?: ""
+            val infoOnlyString = backStackEntry.arguments?.getString("infoOnly") ?: "false"
+            val infoOnly = infoOnlyString.toBooleanStrictOrNull() ?: false  // ⛳ String → Boolean 변환
 
             PostDetailScreen(
                 postId = postId,
                 posts = viewModel.posts.collectAsState().value,
                 onBackClick = { navController.popBackStack() },
                 currentUserId = userId,
-                viewModel = viewModel
+                viewModel = viewModel,
+                infoOnly = infoOnly
             )
         }
 

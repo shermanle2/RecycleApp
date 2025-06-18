@@ -47,7 +47,7 @@ fun Login(
     val context = LocalContext.current
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken("595141046686-ojp3kn3tlfnfqujrvfdum9smtigum9h9.apps.googleusercontent.com")
+        .requestIdToken("553782313749-n2ese6ejt9o2m0mcb7b893dvl1n5pjoj.apps.googleusercontent.com")
         .requestEmail()
         .build()
 
@@ -123,7 +123,11 @@ fun Login(
         Spacer(modifier = Modifier.height(20.dp))
 
         Button(
-            onClick = {
+            onClick = onClick@{
+                if (email.isBlank() || password.isBlank()) {
+                    errorMessage = "이메일과 비밀번호를 모두 입력해주세요."
+                    return@onClick
+                }
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {

@@ -1,6 +1,7 @@
 package com.example.recycle.appExample1.uicomponents.auth
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
+import com.example.recycle.appExample1.uicomponents.auth.GoogleButton
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -47,28 +49,7 @@ fun Register(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val auth = Firebase.auth
-
     val context = LocalContext.current as Activity
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-
-            Firebase.auth.signInWithCredential(credential)
-                .addOnCompleteListener { authResult ->
-                    if (authResult.isSuccessful) {
-                        onRegisterSuccess()
-                    } else {
-                        errorMessage = "구글 로그인 실패: ${authResult.exception?.message}"
-                    }
-                }
-        } catch (e: ApiException) {
-            errorMessage = "계정 인증 오류: ${e.message}"
-        }
-    }
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken("595141046686-ojp3kn3tlfnfqujrvfdum9smtigum9h9.apps.googleusercontent.com")
@@ -76,6 +57,47 @@ fun Register(
         .build()
 
     val googleSignInClient = GoogleSignIn.getClient(context, gso)
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val emailFromGoogle = account.email
+            val idToken = account.idToken
+
+            if (emailFromGoogle != null && idToken != null) {
+                auth.fetchSignInMethodsForEmail(emailFromGoogle)
+                    .addOnCompleteListener { fetchTask ->
+                        if (fetchTask.isSuccessful) {
+                            val signInMethods = fetchTask.result.signInMethods
+                            if (!signInMethods.isNullOrEmpty()) {
+                                errorMessage = "이미 등록된 구글 계정입니다."
+                            } else {
+                                val credential = GoogleAuthProvider.getCredential(idToken, null)
+                                auth.signInWithCredential(credential)
+                                    .addOnCompleteListener { authResult ->
+                                        if (authResult.isSuccessful) {
+                                            onRegisterSuccess()
+                                        } else {
+                                            errorMessage = "구글 회원가입 실패"
+                                        }
+
+                                    }
+                            }
+                        } else {
+                            errorMessage = "계정 확인 중 오류"
+                        }
+                    }
+            } else {
+                errorMessage = "구글 계정 정보를 가져올 수 없습니다."
+            }
+        } catch (e: ApiException) {
+            errorMessage = "계정 인증 오류 : ${e.statusCode} - ${e.message}"
+            Log.e("계정 인증 오류", "${e.statusCode} - ${e.message}")
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -95,15 +117,17 @@ fun Register(
         GoogleButton(
             name = "구글 계정으로 회원가입",
             onClick = {
-                val signInIntent = googleSignInClient.signInIntent
-                launcher.launch(signInIntent)
+                googleSignInClient.signOut().addOnCompleteListener {
+                    val signInIntent = googleSignInClient.signInIntent
+                    launcher.launch(signInIntent)
+                }
             },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Divider(thickness = 1.dp, color = Color.LightGray)
+        HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
@@ -174,11 +198,11 @@ fun Register(
     }
 }
 
- @Preview
- @Composable
- fun RegisterPreview() {
-     Register(
-         onRegisterSuccess = {},
-         onGoogleRegister = {}
-     )
- }
+@Preview
+@Composable
+fun RegisterPreview() {
+    Register(
+        onRegisterSuccess = {},
+        onGoogleRegister = {}
+    )
+}

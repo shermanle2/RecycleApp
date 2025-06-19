@@ -8,6 +8,7 @@ sealed class Routes(val route: String) {
     object Recycling : Routes("recycling")
     object WasteMap : Routes("waste_map")
     object Community : Routes("community")
+    object PostDetail : Routes("post_detail")
+    object CreatePost : Routes("create_post")
     object User : Routes("user")
-    object Article : Routes("article")
 }

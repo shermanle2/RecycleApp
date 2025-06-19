@@ -1,6 +1,8 @@
-package com.example.recycle.appExample1.navGraph
+package com.example.recycle.communityExample.navGraph
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -11,15 +13,19 @@ import com.example.recycle.appExample1.uicomponents.auth.AppStart
 import com.example.recycle.appExample1.uicomponents.auth.Login
 import com.example.recycle.appExample1.uicomponents.auth.Register
 import com.example.recycle.appExample1.uicomponents.home.AppMain
-import com.example.recycle.appExample1.uicomponents.home.Recycling
-import com.example.recycle.appExample1.uicomponents.home.WasteMap
 import com.example.recycle.appExample1.uicomponents.home.Community
+import com.example.recycle.appExample1.uicomponents.home.CreatePostScreen
+import com.example.recycle.appExample1.uicomponents.home.PostDetailScreen
+import com.example.recycle.appExample1.uicomponents.home.Recycling
 import com.example.recycle.appExample1.uicomponents.home.User
-import com.example.recycle.appExample1.uicomponents.home.post.Article
+import com.example.recycle.appExample1.uicomponents.home.WasteMap
+import com.example.recycle.appExample1.viewModel.CommunityViewModel
 
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
+    val viewModel: CommunityViewModel = viewModel()
+
     NavHost(navController = navController, startDestination = Routes.Start.route) {
 
         composable(Routes.Start.route) {
@@ -55,7 +61,8 @@ fun AppNavGraph(navController: NavHostController) {
         ) {
             AppMain(
                 userId = it.arguments?.getString("userID") ?: "",
-                navController = navController
+                navController = navController,
+                viewModel = viewModel
             )
         }
 
@@ -85,6 +92,8 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
+
+
         composable(
             route = "${Routes.Community.route}/{userID}",
             arguments = listOf(navArgument("userID") {
@@ -94,7 +103,47 @@ fun AppNavGraph(navController: NavHostController) {
         ) {
             Community(
                 userId = it.arguments?.getString("userID") ?: "",
-                navController = navController
+                navController = navController,
+                viewModel = viewModel
+            )
+        }
+
+        composable(
+            route = "${Routes.PostDetail.route}/{postId}/{userID}?infoOnly={infoOnly}",
+            arguments = listOf(
+                navArgument("postId") { type = NavType.StringType },
+                navArgument("userID") { type = NavType.StringType },
+                navArgument("infoOnly") {
+                    type = NavType.StringType  // ⛳ 바꿔야 함!
+                    defaultValue = "false"
+                    nullable = true
+                }
+            )
+        ) { backStackEntry ->
+            val postId = backStackEntry.arguments?.getString("postId") ?: ""
+            val userId = backStackEntry.arguments?.getString("userID") ?: ""
+            val infoOnlyString = backStackEntry.arguments?.getString("infoOnly") ?: "false"
+            val infoOnly = infoOnlyString.toBooleanStrictOrNull() ?: false  // ⛳ String → Boolean 변환
+
+            PostDetailScreen(
+                postId = postId,
+                posts = viewModel.posts.collectAsState().value,
+                onBackClick = { navController.popBackStack() },
+                currentUserId = userId,
+                viewModel = viewModel,
+                infoOnly = infoOnly
+            )
+        }
+
+        composable(
+            route = "${Routes.CreatePost.route}/{userID}",
+            arguments = listOf(navArgument("userID") { type = NavType.StringType })
+        ) {
+            val userId = it.arguments?.getString("userID") ?: ""
+            CreatePostScreen(
+                userId = userId,
+                navController = navController,
+                viewModel = viewModel
             )
         }
 
@@ -108,29 +157,6 @@ fun AppNavGraph(navController: NavHostController) {
             User(
                 userId = it.arguments?.getString("userID") ?: "",
                 navController = navController
-            )
-        }
-
-        composable(
-            route = "${Routes.Article.route}/{title}/{author}/{date}/{content}",
-            arguments = listOf(
-                navArgument("title") { type = NavType.StringType },
-                navArgument("author") { type = NavType.StringType },
-                navArgument("date") { type = NavType.StringType },
-                navArgument("content") { type = NavType.StringType }
-            )
-        ) {
-            val title = it.arguments?.getString("title") ?: ""
-            val author = it.arguments?.getString("author") ?: ""
-            val date = it.arguments?.getString("date") ?: ""
-            val content = it.arguments?.getString("content") ?: ""
-
-            Article(
-                title = title,
-                author = author,
-                date = date,
-                content = content,
-                onBackClick = { navController.popBackStack() }
             )
         }
     }

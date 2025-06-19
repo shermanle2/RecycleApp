@@ -45,6 +45,8 @@ import coil.compose.AsyncImage
 import com.example.recycle.appExample1.model.Comment
 import com.example.recycle.appExample1.model.CommunityPost
 import com.example.recycle.appExample1.viewModel.CommunityViewModel
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -114,7 +116,7 @@ fun PostDetailScreen(
             Text(post.title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "작성자 ${post.author} · ${post.date}",
+                "작성자 ${post.authorEmail} · ${post.date}",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -152,7 +154,7 @@ fun PostDetailScreen(
                     Column(modifier = Modifier.padding(vertical = 6.dp)) {
                         Text(text = comment.content)
                         Text(
-                            text = "작성자 ${comment.author} · ${comment.timestamp}",
+                            text = "작성자 ${comment.authorEmail} · ${comment.timestamp}",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -180,6 +182,7 @@ fun PostDetailScreen(
                     val newComment = Comment(
                         content = commentText,
                         author = currentUserId,
+                        authorEmail = Firebase.auth.currentUser?.email ?: "익명",
                         timestamp = sdf.format(Date()),
                         isPrivate = false // 앱에서는 무조건 공개
                     )

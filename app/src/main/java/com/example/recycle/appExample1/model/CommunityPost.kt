@@ -31,6 +31,7 @@ data class CommunityPost(
     val title: String = "",
     val content: String = "",
     val author: String = "",
+    val authorEmail: String = "",
     val date: String = "",
     val category: CommunityPostCategory = CommunityPostCategory.QUESTION,
     val imageUrls: List<String> = emptyList()
@@ -69,7 +70,7 @@ fun CommunityPostItem(post: CommunityPost, onClick: () -> Unit) {
                 Text(text = post.content, maxLines = 2, fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "작성자 ${post.author} · ${post.date}", fontSize = 12.sp, color = Color.Gray
+                    text = "작성자 ${post.authorEmail} · ${post.date}", fontSize = 12.sp, color = Color.Gray
                 )
             }
         }

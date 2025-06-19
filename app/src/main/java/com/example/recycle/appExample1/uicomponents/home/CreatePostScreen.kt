@@ -40,9 +40,12 @@ import coil.compose.AsyncImage
 import com.example.recycle.appExample1.model.CommunityPost
 import com.example.recycle.appExample1.model.CommunityPostCategory
 import com.example.recycle.appExample1.viewModel.CommunityViewModel
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +58,7 @@ fun CreatePostScreen(
     var content by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf(CommunityPostCategory.QUESTION) }
     val imageUris = remember { mutableStateListOf<Uri>() }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
     val launcher = rememberLauncherForActivityResult(
@@ -158,9 +162,17 @@ fun CreatePostScreen(
             Button(
                 onClick = onClick@{
                     if (title.isBlank() || content.isBlank()) {
-                        println("제목과 내용을 입력해주세요.")
+                        errorMessage = "제목과 내용을 입력해주세요."
                         return@onClick
                     }
+
+                    if (selectedCategory == CommunityPostCategory.PROOF && imageUris.isEmpty()) {
+                        errorMessage = "인증 글은 최소 한 장 이상의 사진이 필요합니다."
+                        return@onClick
+                    }
+
+                    // 문제 없으면 에러 메시지 초기화
+                    errorMessage = null
 
                     val sdf = SimpleDateFormat("yyyy.MM.dd", Locale.KOREA)
                     val post = CommunityPost(
@@ -168,6 +180,7 @@ fun CreatePostScreen(
                         title = title,
                         content = content,
                         author = userId,
+                        authorEmail = Firebase.auth.currentUser?.email ?: "익명",
                         date = sdf.format(Date()),
                         category = selectedCategory,
                         imageUrls = emptyList()
@@ -183,6 +196,11 @@ fun CreatePostScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("등록하기")
+            }
+            // 인증글에 이미지 없을 때 에러 표시
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = it, color = Color.Red)
             }
         }
     }

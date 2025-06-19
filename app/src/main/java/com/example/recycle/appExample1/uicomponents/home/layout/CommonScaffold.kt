@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.recycle.R
@@ -54,7 +55,6 @@ fun CommonScaffold(
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_delete_24),
                             contentDescription = "삭제",
-                            tint = Color.Black,
                             modifier = Modifier.size(iconSize)
                         )
                     }
@@ -71,7 +71,6 @@ fun CommonScaffold(
                                     R.drawable.baseline_account_circle_24
                             ),
                             contentDescription = "프로필",
-                            tint = Color.Black,
                             modifier = Modifier.size(iconSize)
                         )
                     }
@@ -105,7 +104,10 @@ fun CommonScaffold(
                                         HomeTab.WASTEMAP -> "쓰레기 배출위치"
                                         HomeTab.COMMUNITY -> "커뮤니티"
                                         else -> ""
-                                    }
+                                    },
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Clip
                                 )
                             }
                         )

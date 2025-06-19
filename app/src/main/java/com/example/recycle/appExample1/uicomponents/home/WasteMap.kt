@@ -2,7 +2,6 @@ package com.example.recycle.appExample1.uicomponents.home
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -33,11 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.recycle.appExample1.model.Routes
@@ -63,9 +56,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
 import java.net.URLEncoder
 
 @OptIn(ExperimentalNaverMapApi::class, ExperimentalPermissionsApi::class)
@@ -180,7 +170,10 @@ fun WasteMap(
                         if (searchQuery.isNotBlank()) {
                             selectedAddress = null
                             CoroutineScope(Dispatchers.IO).launch {
-                                val latLng = searchLocation(searchQuery)
+                                var latLng = searchLocation(searchQuery)
+                                if (latLng == null) {
+                                    latLng = searchKeywordLocation(searchQuery)
+                                }
                                 withContext(Dispatchers.Main) {
                                     if (latLng != null) {
                                         searchTarget = latLng

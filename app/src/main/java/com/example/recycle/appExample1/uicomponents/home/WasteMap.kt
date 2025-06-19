@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.recycle.appExample1.feature.Detection.ApiRepository
+import com.example.recycle.appExample1.model.RecycleLocation
 import com.example.recycle.appExample1.model.Routes
 import com.example.recycle.communityExample.uicomponents.home.layout.CommonScaffold
 import com.example.recycle.communityExample.uicomponents.home.layout.HomeTab
@@ -91,6 +94,10 @@ fun WasteMap(
     var isSearchPerformed by remember { mutableStateOf(false) }
     var selectedAddress by remember { mutableStateOf<String?>(null) }
     var selectedLatLng by remember { mutableStateOf<LatLng?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var addressText by remember { mutableStateOf<String?>(null) }
+    var recycleLocationList by remember { mutableStateOf<List<RecycleLocation>?>(null) }
+    var isDataLoading by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState()
     val locationSource = rememberFusedLocationSource()
@@ -221,7 +228,8 @@ fun WasteMap(
                                 captionText = "현 위치",
                                 onClick = {
                                     selectedLatLng = currentPosition
-                                    selectedAddress = "현재 위치"
+                                    selectedAddress = null      // 초기화
+                                    addressText = null          // 지오코딩 결과도 초기화
                                     true
                                 }
                             )
@@ -239,43 +247,139 @@ fun WasteMap(
                         }
                     }
 
-                    if (selectedLatLng != null && selectedAddress != null) {
-                        Column(
+                    if (selectedLatLng != null) {
+                        Box(
                             modifier = Modifier
-                                .align(Alignment.Center)
-                                .background(Color.White, shape = RoundedCornerShape(12.dp))
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 16.dp)
+                                .background(color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
                                 .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = "(분리수거일 안내)",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "[안내문 보기]",
-                                color = Color.Blue,
-                                modifier = Modifier.clickable {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        selectedLatLng?.let { latLng ->
-                                            Log.d("GuideAddress", "Requesting for latLng: ${latLng.latitude}, ${latLng.longitude}")
-                                            val address = getAddressFromLatLng(latLng.latitude, latLng.longitude)
-                                            Log.d("GuideAddress", "Received address: $address")
-                                            if (address != null) {
-                                                val encoded = URLEncoder.encode(address, "UTF-8")
-                                                val url = "https://example.com/guide?addr=$encoded"
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "분리수거 정보",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = "✕",
+                                        modifier = Modifier
+                                            .clickable {
+                                                selectedLatLng = null
+                                                selectedAddress = null
+                                            }
+                                            .padding(4.dp)
+                                    )
+                                }
 
-                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                                context.startActivity(intent)
-                                            } else {
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                LaunchedEffect(selectedLatLng) {
+                                    selectedLatLng?.let { latLng ->
+                                        isLoading = true
+                                        try {
+                                            withContext(Dispatchers.IO) {
+                                                val addr = getAddressFromLatLng(latLng.latitude, latLng.longitude)
                                                 withContext(Dispatchers.Main) {
-                                                    Toast.makeText(context, "주소를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                                    addressText = addr
+                                                    selectedAddress = addr
                                                 }
                                             }
+                                        } finally {
+                                            isLoading = false
                                         }
                                     }
                                 }
-                            )
+
+                                if (isLoading) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text("주소 정보를 가져오는 중...")
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                } else if(addressText == null){
+                                    Text(
+                                        text = "주소 정보를 가져올 수 없습니다.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Red
+                                    )
+
+                                }
+                                else {
+                                    val apiFormAddr = addressText.orEmpty()
+
+                                    LaunchedEffect(apiFormAddr) {
+                                        if (apiFormAddr.isNotBlank()) {
+                                            isDataLoading = true
+                                            try {
+                                                withContext(Dispatchers.IO) {
+                                                    recycleLocationList = ApiRepository.fetchLocationsSync(apiFormAddr)
+                                                }
+                                            } finally {
+                                                isDataLoading = false
+                                            }
+                                        }
+                                    }
+                                    Text(
+                                        text = "주소: $apiFormAddr",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    if (isDataLoading) {
+                                        Text("분리수거 정보를 가져오는 중...")
+                                    } else if (!recycleLocationList.isNullOrEmpty()) {
+                                        val location = recycleLocationList!![0]
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(8.dp)
+                                        ) {
+                                            Text(
+                                                text = "배출장소: ${location.location}",
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+
+                                            WasteInfoRow(
+                                                title = "일반쓰레기",
+                                                method = location.garbageMethod,
+                                                days = location.garbageDays,
+                                                start = location.garbageStartTime,
+                                                end = location.garbageEndTime
+                                            )
+
+                                            WasteInfoRow(
+                                                title = "재활용품",
+                                                method = location.recycleMethod,
+                                                days = location.recycleDays,
+                                                start = location.recycleStartTime,
+                                                end = location.recycleEndTime
+                                            )
+
+                                            WasteInfoRow(
+                                                title = "음식물쓰레기",
+                                                method = location.foodMethod,
+                                                days = location.foodDays,
+                                                start = location.foodStartTime,
+                                                end = location.foodEndTime
+                                            )
+                                        }
+                                    } else {
+                                        Text("해당 위치에 대한 분리수거 정보가 없습니다.")
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -289,7 +393,27 @@ fun WasteMap(
         }
     }
 }
+    @Composable
+    private fun WasteInfoRow(
+        title: String,
+        method: String,
+        days: String,
+        start: String,
+        end: String
+    ) {
+        Column(modifier = Modifier.padding(vertical = 4.dp)) {
+            Text(
+                text = "$title: $method",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Text(
+                text = "배출요일: $days ($start~$end)",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
 
+    // preview
 // preview
 @Preview(showBackground = true)
 @Composable

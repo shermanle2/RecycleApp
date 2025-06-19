@@ -77,7 +77,8 @@ fun AppNavGraph(navController: NavHostController) {
         ) {
             Recycling(
                 userId = it.arguments?.getString("userID") ?: "",
-                navController = navController
+                navController = navController,
+                viewModel = userViewModel
             )
         }
 

@@ -10,7 +10,6 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.provider.Settings
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.AspectRatio
@@ -51,17 +50,19 @@ import com.example.recycle.appExample1.feature.Detection.drawBoundingBoxOnBitmap
 import com.example.recycle.appExample1.feature.Detection.postBitmapForDetection
 import com.example.recycle.appExample1.model.RecycleItem
 import com.example.recycle.appExample1.model.Routes
+import com.example.recycle.appExample1.viewModel.UserViewModel
 import com.example.recycle.communityExample.uicomponents.home.layout.CommonScaffold
 import com.example.recycle.communityExample.uicomponents.home.layout.HomeTab
 import java.io.File
-import java.io.FileOutputStream
 
 private val DEBUG = BuildConfig.DEBUG
 
 @Composable
 fun CameraCaptureScreen(
     modifier: Modifier = Modifier.fillMaxWidth(),
-    items: MutableState<List<RecycleItem>>
+    items: MutableState<List<RecycleItem>>,
+    userId: String,
+    viewModel: UserViewModel
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -273,7 +274,7 @@ fun CameraCaptureScreen(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 12.dp)
             )
-            MyHorizontalScrollRow(items = items.value)
+            MyHorizontalScrollRow(userId = userId, viewModel=viewModel, items = items.value)
         }
         else if (!isLoading && items.value.isEmpty() && capturedImage != null) {
             var showNoDetectionDialog by remember { mutableStateOf(true) }
@@ -323,7 +324,7 @@ fun CameraCaptureScreen(
 }
 
 @Composable
-fun MyHorizontalScrollRow(items: List<RecycleItem>) {
+fun MyHorizontalScrollRow(items: List<RecycleItem>, userId: String, viewModel: UserViewModel) {
     var selectedItem by remember { mutableStateOf<RecycleItem?>(null) }
     Row(
         modifier = Modifier
@@ -362,13 +363,13 @@ fun MyHorizontalScrollRow(items: List<RecycleItem>) {
             text = { Text(it.description) },
             confirmButton = {
                 Button(
-                    onClick = { selectedItem = null },
+                    onClick = { selectedItem = null
+                        viewModel.updateStats(userId=userId, material= it.name, success= true) },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("분리수거 완료", color = MaterialTheme.colorScheme.onPrimary)
                 }
-                /* 파이어베이스 서버에 올리는 코드  */
-                /* 분리수거 비율에 it.name 이름의 값을 +1 */
+
             },
             dismissButton = {
                 TextButton(onClick = { selectedItem = null }) { Text("확인") }
@@ -380,7 +381,8 @@ fun MyHorizontalScrollRow(items: List<RecycleItem>) {
 @Composable
 fun Recycling(
     userId: String,
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: UserViewModel
 ) {
     var items by remember { mutableStateOf(emptyList<RecycleItem>()) }
     CommonScaffold(
@@ -404,7 +406,11 @@ fun Recycling(
         onDeleteClick = { }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            CameraCaptureScreen(items = remember { mutableStateOf(items) })
+            CameraCaptureScreen(
+                items = remember { mutableStateOf(items) },
+                userId = userId,
+                viewModel = viewModel
+            )
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.recycle.appExample1.uicomponents.home
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -255,9 +256,24 @@ fun WasteMap(
                                 text = "[안내문 보기]",
                                 color = Color.Blue,
                                 modifier = Modifier.clickable {
-                                    val encoded = URLEncoder.encode(selectedAddress!!, "UTF-8")
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com/guide?addr=$encoded"))
-                                    context.startActivity(intent)
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        selectedLatLng?.let { latLng ->
+                                            Log.d("GuideAddress", "Requesting for latLng: ${latLng.latitude}, ${latLng.longitude}")
+                                            val address = getAddressFromLatLng(latLng.latitude, latLng.longitude)
+                                            Log.d("GuideAddress", "Received address: $address")
+                                            if (address != null) {
+                                                val encoded = URLEncoder.encode(address, "UTF-8")
+                                                val url = "https://example.com/guide?addr=$encoded"
+
+                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                                context.startActivity(intent)
+                                            } else {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "주소를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             )
                         }

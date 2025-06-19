@@ -10,6 +10,7 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.provider.Settings
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.AspectRatio
@@ -357,24 +358,35 @@ fun MyHorizontalScrollRow(items: List<RecycleItem>, userId: String, viewModel: U
         }
     }
     selectedItem?.let {
-        AlertDialog(
-            onDismissRequest = { selectedItem = null },
-            title = { Text(it.name) },
-            text = { Text(it.description) },
-            confirmButton = {
-                Button(
-                    onClick = { selectedItem = null
-                        viewModel.updateStats(userId=userId, material= it.name, success= true) },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text("분리수거 완료", color = MaterialTheme.colorScheme.onPrimary)
+        if(userId.isEmpty()){
+            AlertDialog(
+                onDismissRequest = { selectedItem = null },
+                title = { Text(it.name) },
+                text = { Text(it.description) },
+                confirmButton = {
+                    TextButton(onClick = { selectedItem = null }) { Text("확인") }
                 }
+            )
+        }else{
+            AlertDialog(
+                onDismissRequest = { selectedItem = null },
+                title = { Text(it.name) },
+                text = { Text(it.description) },
+                confirmButton = {
+                    Button(
+                        onClick = { selectedItem = null
+                            viewModel.updateStats(userId=userId, material= it.name, success= true) },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text("분리수거 완료", color = MaterialTheme.colorScheme.onPrimary)
+                    }
 
-            },
-            dismissButton = {
-                TextButton(onClick = { selectedItem = null }) { Text("확인") }
-            }
-        )
+                },
+                dismissButton = {
+                    TextButton(onClick = { selectedItem = null }) { Text("확인") }
+                }
+            )
+        }
     }
 }
 

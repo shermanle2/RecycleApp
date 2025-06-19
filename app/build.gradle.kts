@@ -81,7 +81,6 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.coil.compose)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.storage.ktx)
     implementation(libs.map.sdk)
@@ -97,6 +96,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     dependencies {implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")}
     implementation("com.github.tehras:charts:0.2.4-alpha")
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }
 
 secrets {

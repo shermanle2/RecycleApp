@@ -41,7 +41,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 import com.example.recycle.appExample1.model.Comment
 import com.example.recycle.appExample1.model.CommunityPost
 import com.example.recycle.appExample1.viewModel.CommunityViewModel

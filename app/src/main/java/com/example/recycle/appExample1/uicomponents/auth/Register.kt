@@ -25,13 +25,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
-import com.example.recycle.appExample1.uicomponents.auth.GoogleButton
+import com.example.recycle.appExample1.uicomponents.home.createEmptyStats
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -79,6 +79,10 @@ fun Register(
                                 auth.signInWithCredential(credential)
                                     .addOnCompleteListener { authResult ->
                                         if (authResult.isSuccessful) {
+                                            val uid = Firebase.auth.currentUser?.uid
+                                            if (uid != null) {
+                                                createEmptyStats(uid)
+                                            }
                                             onRegisterSuccess()
                                         } else {
                                             errorMessage = "구글 회원가입 실패"
@@ -161,9 +165,18 @@ fun Register(
 
         Button(
             onClick = {
+                if (email.isBlank() || password.isBlank()) {
+                    errorMessage = "이메일과 비밀번호를 모두 입력해주세요."
+                    return@Button
+                }
+
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
+                            val uid = Firebase.auth.currentUser?.uid
+                            if (uid != null) {
+                                createEmptyStats(uid)
+                            }
                             onRegisterSuccess()
                         } else {
                             val message = when (task.exception?.message) {

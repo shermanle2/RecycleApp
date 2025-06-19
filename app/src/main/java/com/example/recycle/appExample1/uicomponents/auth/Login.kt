@@ -27,7 +27,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.recycle.appExample1.uicomponents.auth.GoogleButton
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -64,7 +63,10 @@ fun Login(
             auth.signInWithCredential(credential)
                 .addOnCompleteListener { authResult ->
                     if (authResult.isSuccessful) {
-                        onLoginSuccess(account.email ?: "Unknown")
+                        val uid = Firebase.auth.currentUser?.uid
+                        if (uid != null) {
+                            onLoginSuccess(uid)
+                        }
                     } else {
                         val errorText = when (authResult.exception?.message) {
                             "The user account has been disabled by an administrator." ->
@@ -131,7 +133,10 @@ fun Login(
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            onLoginSuccess(email)
+                            val uid = Firebase.auth.currentUser?.uid
+                            if (uid != null) {
+                                onLoginSuccess(uid)
+                            }
                         } else {
                             val exception = task.exception
                             if (exception != null) {

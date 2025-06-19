@@ -36,7 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 import com.example.recycle.appExample1.model.CommunityPost
 import com.example.recycle.appExample1.model.CommunityPostCategory
 import com.example.recycle.appExample1.viewModel.CommunityViewModel

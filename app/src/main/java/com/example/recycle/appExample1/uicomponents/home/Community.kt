@@ -34,7 +34,7 @@ import com.example.recycle.communityExample.uicomponents.home.layout.HomeTab
 
 @Composable
 fun Community(
-    userId: String,
+    userId: String?,
     navController: NavHostController,
     viewModel: CommunityViewModel
 ) {
@@ -105,16 +105,18 @@ fun Community(
                 }
             }
 
-            // 새 글 작성 버튼
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate("${Routes.CreatePost.route}/$userId")
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "새 글 작성")
+            // 새 글 작성 버튼, userID가 없으면 비회원 --> 글 작성 불가능
+            if (!userId.isNullOrBlank()) {
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate("${Routes.CreatePost.route}/$userId")
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "새 글 작성")
+                }
             }
         }
     }

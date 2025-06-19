@@ -20,7 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import coil.compose.AsyncImage
 
 enum class CommunityPostCategory(val label: String) {
     ALL("전체 글"), QUESTION("질문"), INFO("정보"), PROOF("인증")

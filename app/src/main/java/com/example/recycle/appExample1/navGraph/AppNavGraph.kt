@@ -20,11 +20,13 @@ import com.example.recycle.appExample1.uicomponents.home.Recycling
 import com.example.recycle.appExample1.uicomponents.home.User
 import com.example.recycle.appExample1.uicomponents.home.WasteMap
 import com.example.recycle.appExample1.viewModel.CommunityViewModel
+import com.example.recycle.appExample1.viewModel.UserViewModel
 
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
     val viewModel: CommunityViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = Routes.Start.route) {
 
@@ -154,9 +156,11 @@ fun AppNavGraph(navController: NavHostController) {
                 defaultValue = ""
             })
         ) {
+            val userId = it.arguments?.getString("userID") ?: ""
             User(
-                userId = it.arguments?.getString("userID") ?: "",
-                navController = navController
+                userId = userId,
+                navController = navController,
+                viewModel = userViewModel
             )
         }
     }

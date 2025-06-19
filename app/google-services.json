@@ -1,41 +1,41 @@
 {
   "project_info": {
-    "project_number": "595141046686",
-    "project_id": "recycle-c1916",
-    "storage_bucket": "recycle-c1916.firebasestorage.app"
+    "project_number": "553782313749",
+    "project_id": "recycle-team5",
+    "storage_bucket": "recycle-team5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:595141046686:android:85eb59d7c1fd86cce5268f",
+        "mobilesdk_app_id": "1:553782313749:android:74478e75c22cab7124df1c",
         "android_client_info": {
           "package_name": "com.example.recycle"
         }
       },
       "oauth_client": [
         {
-          "client_id": "595141046686-ve9qma71a5qm7s4hrif56ehhbd41tsbo.apps.googleusercontent.com",
+          "client_id": "553782313749-n2ese6ejt9o2m0mcb7b893dvl1n5pjoj.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.recycle",
-            "certificate_hash": "b2e50d0afe63d3830c18e06e3d91341b6286ed67"
+            "certificate_hash": "f65d298a010274824181042e6968aad88c6f761e"
           }
         },
         {
-          "client_id": "595141046686-ojp3kn3tlfnfqujrvfdum9smtigum9h9.apps.googleusercontent.com",
+          "client_id": "553782313749-bhcrrq62v8anmfst5mjlda05ntaac07r.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDxIEj0iSUXPULoYkZZCyr24bw_-nzLB3k"
+          "current_key": "AIzaSyAb3_bqesnO4F8AFjgbY5_aiRP9IjN67hI"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "595141046686-ojp3kn3tlfnfqujrvfdum9smtigum9h9.apps.googleusercontent.com",
+              "client_id": "553782313749-bhcrrq62v8anmfst5mjlda05ntaac07r.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

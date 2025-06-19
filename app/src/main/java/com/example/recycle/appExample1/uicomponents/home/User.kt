@@ -43,8 +43,9 @@ fun User(
     val stats by viewModel.stats.collectAsState()
 
     LaunchedEffect(userId) {
-        println("🔎 UserScreen 시작: userId = $userId")
-        viewModel.loadStats(userId)
+        if (userId.isNotBlank()) {
+            viewModel.loadStats(userId)
+        }
     }
 
     val pieData = stats
@@ -85,54 +86,69 @@ fun User(
             launchSingleTop = true
         }
     }, onDeleteClick = { }) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Text("최근 7일 분리수거 통계", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PieChart(
-                pieChartData = PieChartData(resultPieData),
+        if (userId.isBlank()) {
+            // 비회원 전용 메시지 UI
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("성공률 : $successRate%  (${success.toInt()}/${total.toInt()})", fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(32.dp))
-            Text("최근 7일 분리수거 통계", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PieChart(
-                pieChartData = PieChartData(pieData),
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "비회원은 이 기능을 사용할 수 없습니다.",
+                    color = Color.Red
+                )
+            }
+        } else {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Text("분리수거 종류별 배출 비율", fontSize = 20.sp)
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Text("최근 7일 분리수거 통계", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(16.dp))
 
-            stats
-                .filterKeys { it != "totalSuccess" && it != "totalFail" }
-                .forEach { (label, _) ->
-                    val color = generateColorForLabel(label)
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(16.dp)
-                                .background(color)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("$label: ${stats[label]?.toInt() ?: 0}개")
+                PieChart(
+                    pieChartData = PieChartData(resultPieData),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(240.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("성공률 : $successRate%  (${success.toInt()}/${total.toInt()})", fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(32.dp))
+                Text("최근 7일 분리수거 통계", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                PieChart(
+                    pieChartData = PieChartData(pieData),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(240.dp)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text("분리수거 종류별 배출 비율", fontSize = 20.sp)
+
+                stats
+                    .filterKeys { it != "totalSuccess" && it != "totalFail" }
+                    .forEach { (label, _) ->
+                        val color = generateColorForLabel(label)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .background(color)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("$label: ${stats[label]?.toInt() ?: 0}개")
+                        }
                     }
-                }
+            }
         }
     }
 }

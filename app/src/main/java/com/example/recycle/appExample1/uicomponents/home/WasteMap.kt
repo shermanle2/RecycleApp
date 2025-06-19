@@ -87,22 +87,22 @@ fun WasteMap(
 
     val granted = permissionsState.permissions.any { it.status.isGranted }
 
+
     val context = LocalContext.current
     val fusedLocationClient = remember {
         LocationServices.getFusedLocationProviderClient(context)
     }
 
+
     var currentPosition by remember { mutableStateOf<LatLng?>(null) }
-    //var searchMarkerPosition by remember { mutableStateOf<LatLng?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     var searchTarget by remember { mutableStateOf<LatLng?>(null) }
-    var selectedAddress by remember { mutableStateOf<String?>(null) }
     var isSearchPerformed by remember { mutableStateOf(false) }
+    var selectedAddress by remember { mutableStateOf<String?>(null) }
     var selectedLatLng by remember { mutableStateOf<LatLng?>(null) }
 
     val cameraPositionState = rememberCameraPositionState()
     val locationSource = rememberFusedLocationSource()
-
     val searchMarkerState = rememberMarkerState()
 
     LaunchedEffect(granted) {
@@ -127,59 +127,6 @@ fun WasteMap(
                 CameraUpdate.toCameraPosition(CameraPosition(it, 16.0))
             )
             searchMarkerState.position = it
-        }
-    }
-
-    fun searchLocation(query: String, onResult: (LatLng?) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val encoded = URLEncoder.encode(query, "UTF-8")
-                val clientId = "r89ds09wik"
-                val clientSecret = "VQ0m9n5QxEfpC156ixZmCzYemq1e6wNzMTxBzY2p"
-                val url = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=$encoded"
-
-                val request = Request.Builder()
-                    .url(url)
-                    .get()
-                    .addHeader("X-NCP-APIGW-API-KEY-ID", clientId)
-                    .addHeader("X-NCP-APIGW-API-KEY", clientSecret)
-                    .build()
-
-                val response = OkHttpClient().newCall(request).execute()
-                val json = response.body?.string()
-
-                Log.d("GeocodingRaw", "clientId=$clientId, clientSecret=$clientSecret, response=$json")
-
-                val obj = JSONObject(json ?: "")
-                if (obj.has("error")) {
-                    val error = obj.getJSONObject("error")
-                    Log.e("GeocodingError", "code=${error.getString("errorCode")}, msg=${error.getString("message")}")
-                    withContext(Dispatchers.Main) { onResult(null) }
-                    return@launch
-                }
-
-                val addresses = obj.getJSONArray("addresses")
-                if (addresses.length() == 0) {
-                    withContext(Dispatchers.Main) {
-                        onResult(null)
-                    }
-                    return@launch
-                }
-
-                val first = addresses.getJSONObject(0)
-                val x = first.getDouble("x")
-                val y = first.getDouble("y")
-                val latLng = LatLng(y, x)
-
-                withContext(Dispatchers.Main) {
-                    onResult(latLng)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    onResult(null)
-                }
-            }
         }
     }
 
@@ -232,12 +179,15 @@ fun WasteMap(
                     onClick = {
                         if (searchQuery.isNotBlank()) {
                             selectedAddress = null
-                            searchLocation(searchQuery) { latLng ->
-                                if (latLng != null) {
-                                    searchTarget = latLng
-                                    isSearchPerformed = true
-                                } else {
-                                    Toast.makeText(context, "검색 결과 없음", Toast.LENGTH_SHORT).show()
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val latLng = searchLocation(searchQuery)
+                                withContext(Dispatchers.Main) {
+                                    if (latLng != null) {
+                                        searchTarget = latLng
+                                        isSearchPerformed = true
+                                    } else {
+                                        Toast.makeText(context, "검색 결과 없음", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             }
                         }

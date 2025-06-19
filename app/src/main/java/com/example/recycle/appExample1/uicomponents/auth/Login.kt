@@ -47,7 +47,7 @@ fun Login(
     val context = LocalContext.current
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken("553782313749-n2ese6ejt9o2m0mcb7b893dvl1n5pjoj.apps.googleusercontent.com")
+        .requestIdToken("553782313749-bhcrrq62v8anmfst5mjlda05ntaac07r.apps.googleusercontent.com")
         .requestEmail()
         .build()
 

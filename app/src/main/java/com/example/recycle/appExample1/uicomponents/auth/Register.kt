@@ -52,7 +52,7 @@ fun Register(
     val context = LocalContext.current as Activity
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken("595141046686-ojp3kn3tlfnfqujrvfdum9smtigum9h9.apps.googleusercontent.com")
+        .requestIdToken("553782313749-bhcrrq62v8anmfst5mjlda05ntaac07r.apps.googleusercontent.com")
         .requestEmail()
         .build()
 

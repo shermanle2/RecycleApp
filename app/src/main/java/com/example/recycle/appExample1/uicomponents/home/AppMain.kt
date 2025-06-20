@@ -65,7 +65,7 @@ fun AppMain(
         Column(modifier = Modifier.padding(innerPadding)) {
             Text(
                 text = "분리수거 정보",
-                fontSize = 20.sp,
+                fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 16.dp, end = 12.dp)
             )

@@ -165,41 +165,48 @@ fun PostDetailScreen(
             HorizontalDivider()
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = commentText,
-                onValueChange = { commentText = it },
-                label = { Text("댓글을 입력하세요") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            if (currentUserId.isNotBlank()) {
+                OutlinedTextField(
+                    value = commentText,
+                    onValueChange = { commentText = it },
+                    label = { Text("댓글을 입력하세요") },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
-                onClick = onClick@{
-                    if (commentText.isBlank()) return@onClick
+                Button(
+                    onClick = onClick@{
+                        if (commentText.isBlank()) return@onClick
 
-                    val sdf = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.KOREA)
-                    val newComment = Comment(
-                        content = commentText,
-                        author = currentUserId,
-                        authorEmail = Firebase.auth.currentUser?.email ?: "익명",
-                        timestamp = sdf.format(Date()),
-                        isPrivate = false // 앱에서는 무조건 공개
-                    )
+                        val sdf = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.KOREA)
+                        val newComment = Comment(
+                            content = commentText,
+                            author = currentUserId,
+                            authorEmail = Firebase.auth.currentUser?.email ?: "익명",
+                            timestamp = sdf.format(Date()),
+                            isPrivate = false
+                        )
 
-                    viewModel.addComment(post.id, newComment) {
-                        // 저장 후 댓글 목록 다시 불러오기
-                        viewModel.loadComments(post.id) { loaded ->
-                            comments.clear()
-                            comments.addAll(loaded)
+                        viewModel.addComment(post.id, newComment) {
+                            viewModel.loadComments(post.id) { loaded ->
+                                comments.clear()
+                                comments.addAll(loaded)
+                            }
+                            commentText = ""
                         }
-                        commentText = ""
-                    }
-                }, modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("등록")
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("등록")
+                }
+            } else {
+                Text(
+                    "로그인 후 댓글을 작성할 수 있습니다.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-
         }
     }
 }

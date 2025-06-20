@@ -147,7 +147,7 @@ fun CreatePostScreen(
                 }
             }
 
-// 사진 선택 버튼
+            // 사진 선택 버튼
             OutlinedButton(onClick = {
                 if (imageUris.size < 5) {
                     launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))

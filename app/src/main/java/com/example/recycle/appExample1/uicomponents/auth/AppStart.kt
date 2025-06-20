@@ -46,10 +46,10 @@ fun AppStart(
         )
 
         Image(
-            painter = painterResource(id = R.drawable.baseline_photo_24),
+            painter = painterResource(id = R.drawable.app_icon),
             contentDescription = "앱 로고",
             modifier = Modifier
-                .size(200.dp)
+                .size(300.dp)
                 .padding(bottom = 32.dp)
         )
 

@@ -1,5 +1,6 @@
 package com.example.recycle.communityExample.uicomponents.home.layout
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -48,16 +49,11 @@ fun CommonScaffold(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(
-                        onClick = onDeleteClick,
-                        modifier = Modifier.size(iconSize)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_delete_24),
-                            contentDescription = "삭제",
+                    Image(
+                            painter = painterResource(id = R.drawable.app_icon),
+                            contentDescription = "아이콘",
                             modifier = Modifier.size(iconSize)
-                        )
-                    }
+                    )
 
                     IconButton(
                         onClick = onUserClick,

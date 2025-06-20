@@ -107,7 +107,7 @@ fun User(
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                Text("최근 7일 분리수거 통계", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
+                Text("나의 분리수거 통계", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 PieChart(
@@ -118,8 +118,9 @@ fun User(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("성공률 : $successRate%  (${success.toInt()}/${total.toInt()})", fontSize = 16.sp)
+                Text("*성공률은 인증글 작성 후 다른 회원의 댓글에 의해 결정됩니다.", fontSize = 12.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(32.dp))
-                Text("최근 7일 분리수거 통계", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
+                Text("분리수거 된 재활용품 비율", fontSize = 24.sp, style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 PieChart(
@@ -148,6 +149,7 @@ fun User(
                             Text("$label: ${stats[label]?.toInt() ?: 0}개")
                         }
                     }
+                Text("*재활용품 분류탭에 이미지 인식을 통해 분리수거 된 재활용품의 종류가 기록됩니다.", fontSize = 12.sp, color = Color.Gray)
             }
         }
     }

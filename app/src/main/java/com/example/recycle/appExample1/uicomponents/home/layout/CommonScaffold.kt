@@ -32,7 +32,7 @@ fun CommonScaffold(
     onDeleteClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val iconSize = 70.dp
+    val iconSize = 40.dp
 
     Scaffold(
         topBar = {

@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -86,7 +87,7 @@ fun PostDetailScreen(
         topBar = {
             TopAppBar(title = {
                 Text(
-                    text = post.title, maxLines = 1, style = MaterialTheme.typography.titleLarge
+                    text = post.title, maxLines = 3, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleLarge
                 )
             }, navigationIcon = {
                 IconButton(onClick = onBackClick) {
